@@ -1,20 +1,27 @@
 const express = require('express');
 const Usuario = require('../models/usuario');
+const {verificaToken, verificaAdmin_Role} = require('../middlewares/authentication');
 
 const app = express();
 
 const bcrypt = require('bcrypt');
 const _ = require('underscore');
 
-app.get('/usuario', function (req, res) {
+app.get('/usuario', verificaToken, function (req, res) {
+
+    // return res.json({
+    //     usuario: req.usuario,
+    //     nombre: req.usuario.nombre,
+    //     email: req.usuario.email
+    // });
 
     let desde = req.query.desde || 0;
     desde = Number(desde);
 
-    let limite = req.query.limite || 5;
+    let limite = req.query.limite || 20;
     limite = Number(limite);
     
-    Usuario.find({estado: true}, 'nombre email role estado google img')
+    Usuario.find({}, 'nombre email role estado google img')
             .skip(desde)
             .limit(limite)
             .exec((err, usuarios) => {
@@ -25,7 +32,7 @@ app.get('/usuario', function (req, res) {
                     });
                 }
 
-                Usuario.count({estado: true}, (err, conteo) => {
+                Usuario.count({}, (err, conteo) => {
 
                     res.json({
                         ok: true,
@@ -40,7 +47,7 @@ app.get('/usuario', function (req, res) {
 
   });
 
-app.post('/usuario', function (req, res) {
+app.post('/usuario', [verificaToken, verificaAdmin_Role], function (req, res) {
     let body = req.body;
 
     let usuario = new Usuario({
@@ -66,7 +73,7 @@ app.post('/usuario', function (req, res) {
 
 });
 
-app.put('/usuario/:id', function (req, res) {
+app.put('/usuario/:id', [verificaToken, verificaAdmin_Role], function (req, res) {
     let id = req.params.id;
     let body = _.pick(req.body, 
     ['nombre',
@@ -94,7 +101,7 @@ app.put('/usuario/:id', function (req, res) {
     
 });
 
-app.delete('/usuario/:id', function (req, res) {
+app.delete('/usuario/:id', [verificaToken, verificaAdmin_Role], function (req, res) {
     
     let id = req.params.id;
     let estado = false;
