@@ -1,4 +1,3 @@
-var mongoose = require('mongoose');
 const express = require('express');
 const {verificaToken, verificaAdmin_Role} = require('../middlewares/authentication');
 
@@ -143,35 +142,16 @@ app.post('/productos', verificaToken, (req, res) => {
             });
         }
 
-        Categoria.find({descripcion: req.body.descripcionCat, usuario: usuarioId}, (err, categoriaId) => {
+        let body = req.body;
 
-            if(err){
-                return res.status(500).json({
-                    ok: false,
-                    err
-                });
-            }
-
-            if(!categoriaId){
-                return res.json({
-                    ok: false,
-                    err: {
-                        message: `No se encuentra la categoria con descripcion ${req.body.descripcionCat} y usuario ${req.usuario}`
-                    }
-                });
-            }
-
-            let body = req.body;
-            let id_categoria = mongoose.Types.ObjectId(categoriaId._id);
+        Categoria.findById(body.categoria, (err, categoriaId) => {
 
             let producto = new Producto({
                 nombre: body.nombre,
                 precioUni: body.precioUni,
                 descripcion: body.descripcion,
                 disponible: body.disponible,
-                categoria: {
-                    _id: id_categoria
-                },
+                categoria: body.categoria,
                 usuario: req.usuario._id
             });
 
@@ -180,6 +160,15 @@ app.post('/productos', verificaToken, (req, res) => {
                     return res.status(500).json({
                         ok: false,
                         err
+                    });
+                }
+
+                if(!productoDB){
+                    return res.json({
+                        ok: false,
+                        err: {
+                            message: `No se encuentra el producto con id ${body.categoria}`
+                        }
                     });
                 }
 
