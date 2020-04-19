@@ -19,7 +19,7 @@ let verificaToken = (req, res, next) => {
             });
         }
 
-        req.usuario = decoded.usuario;
+        req.usuario = decoded.usuario; // Cuando hemos verificado el token, añadimos el parámetro usuario a req (req.usuario)
 
         next();
 
